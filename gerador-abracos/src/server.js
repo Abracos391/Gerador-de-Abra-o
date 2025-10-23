@@ -42,7 +42,6 @@ app.post("/api/generate", async (req, res) => {
       }
     );
 
-    // Recebe a imagem em base64
     const imageBase64 = response.data?.artifacts?.[0]?.base64 || null;
 
     if (!imageBase64) return res.status(500).json({ success: false, error: "Erro ao gerar imagem" });
