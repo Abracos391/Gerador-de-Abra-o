@@ -14,6 +14,9 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(morgan("dev"));
 
+// Serve arquivos estáticos do diretório "public"
+app.use(express.static("public"));
+
 // Rota principal de geração
 app.use("/api/generate", generateRoute);
 
