@@ -1,66 +1,82 @@
 import express from "express";
+import bcrypt from "bcrypt";
 import { createClient } from "@supabase/supabase-js";
-import { generateImage } from "../services/stability.js";
-import { buildPrompt } from "../utils/promptBuilder.js";
 
 const router = express.Router();
 
-// Configuração do Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
+// Inicializa Supabase dentro da rota (evita erro de env vazio no import)
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
+}
 
-router.post("/", async (req, res) => {
-  try {
-    const { email, mensagem, estilo, tema, corPredominante, corTexto, posicaoTexto } = req.body;
-
-    if (!email || !mensagem) {
-      return res.status(400).json({ success: false, error: "E-mail e mensagem são obrigatórios." });
-    }
-
-    // ✅ Verifica limite (10/mês)
-    const agora = new Date();
-    const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
-    const {  uso } = await supabase
-      .from("usos")
-      .select("imagens_geradas, mes_ano")
-      .eq("email", email)
-      .maybeSingle();
-
-    let imagens_geradas = uso?.imagens_geradas || 0;
-    const mes_atual = uso?.mes_ano === mesAno;
-
-    if (mes_atual && imagens_geradas >= 10) {
-      return res.status(429).json({ success: false, error: "Limite de 10 imagens/mês atingido." });
-    }
-
-    // Monta prompt
-    const prompt = buildPrompt({
-      mensagem,
-      estilo,
-      tema,
-      corPredominante,
-      corTexto,
-      posicaoTexto,
-    });
-
-    // Gera imagem
-    const imageBase64 = await generateImage(prompt);
-
-    // ✅ Atualiza contador
-    await supabase
-      .from("usos")
-      .upsert(
-        { email, mes_ano, imagens_geradas: mes_atual ? imagens_geradas + 1 : 1 },
-        { onConflict: "email" }
-      );
-
-    res.status(200).json({ success: true, prompt, image: imageBase64 });
-  } catch (error) {
-    console.error("Erro ao gerar imagem:", error.message);
-    res.status(500).json({ success: false, error: error.message || "Falha ao gerar imagem." });
+// Rota de login
+router.post("/login", async (req, res) => {
+  const { email, whatsapp, senha } = req.body;
+  if (!email || !whatsapp || !senha) {
+    return res.status(400).json({ error: "E-mail, WhatsApp e senha são obrigatórios." });
   }
+
+  const supabase = getSupabase();
+  const {  usuario } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (!usuario || !bcrypt.compareSync(senha, usuario.senha_hash)) {
+    return res.status(401).json({ error: "Credenciais inválidas." });
+  }
+
+  // Gera token simples (para MVP — em produção, use JWT)
+  const token = Buffer.from(`${email}:${Date.now()}`).toString("base64").slice(0, 32);
+  res.json({ success: true, token, whatsapp: usuario.whatsapp });
+});
+
+// Rota de geração (requer token)
+router.post("/", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "Token ausente." });
+
+  const token = authHeader.split(" ")[1];
+  const email = Buffer.from(token, "base64").toString().split(":")[0];
+
+  const supabase = getSupabase();
+  const {  usuario } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (!usuario) return res.status(401).json({ error: "Usuário não autenticado." });
+
+  const { mensagem, estilo, tema, corPredominante, corTexto, posicaoTexto } = req.body;
+  if (!mensagem) return res.status(400).json({ error: "Mensagem é obrigatória." });
+
+  // Controle de limite
+  const agora = new Date();
+  const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
+  const imagens_geradas = usuario.mes_ano === mesAno ? usuario.imagens_geradas : 0;
+
+  if (imagens_geradas >= 10) {
+    return res.status(429).json({ error: "Limite de 10 imagens/mês atingido." });
+  }
+
+  // Gera imagem (substitua com sua lógica de IA depois)
+  const imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAA..."; // placeholder
+
+  // Atualiza contador
+  await supabase
+    .from("usuarios")
+    .update({
+      imagens_geradas: imagens_geradas + 1,
+      mes_ano
+    })
+    .eq("email", email);
+
+  res.json({ success: true, image: imageBase64 });
 });
 
 export default router;
