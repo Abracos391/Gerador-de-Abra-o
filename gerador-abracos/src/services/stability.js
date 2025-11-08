@@ -1,41 +1,38 @@
 import axios from "axios";
 
-const STABILITY_API_URL = "https://api.stability.ai/v2beta/stable-image/generate/standard";
-const STABILITY_KEY = process.env.STABILITY_API_KEY; // ← nome correto
+// ✅ URL CORRETA para conta GRATUITA
+const STABILITY_API_URL = "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image";
+
+// ✅ Nome da variável EXATO (usado no Render)
+const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
 export async function generateImage(prompt) {
-  if (!STABILITY_KEY) {
-    throw new Error("Chave da Stability AI não configurada. Verifique STABILITY_API_KEY.");
+  if (!STABILITY_API_KEY) {
+    throw new Error("STABILITY_API_KEY não configurada no Render.");
   }
 
-  try {
-    const response = await axios.post(
-      STABILITY_API_URL,
-      {
-        prompt: prompt,
-        width: 1024,
-        height: 1536,
-        samples: 1,
-        output_format: "png"
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${STABILITY_KEY}`,
-          Accept: "application/json"
-        },
-        responseType: "json"
+  const response = await axios.post(
+    STABILITY_API_URL,
+    {
+      text_prompts: [{ text: prompt }],
+      cfg_scale: 7,
+      height: 1536,
+      width: 1024,
+      steps: 30,
+      samples: 1
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${STABILITY_API_KEY}`,
+        "Accept": "application/json"
       }
-    );
+    }
+  );
 
-    const base64 = response.data?.artifacts?.[0]?.base64;
-    if (!base64) throw new Error("Imagem não gerada pela Stability AI.");
-
-    return base64;
-  } catch (error) {
-    const status = error.response?.status;
-    const data = error.response?.data;
-    console.error(`Stability AI erro ${status}:`, data || error.message);
-    throw new Error(`Erro ${status || 'desconhecido'} ao gerar imagem.`);
+  if (!response.data?.artifacts?.[0]?.base64) {
+    throw new Error("Resposta inválida da Stability AI.");
   }
+
+  return response.data.artifacts[0].base64;
 }
