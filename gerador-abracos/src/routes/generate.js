@@ -1,31 +1,49 @@
 import express from "express";
 import { generateImage } from "../services/stability.js";
+import { buildPrompt } from "../utils/promptBuilder.js";
 
 const router = express.Router();
 
+// Rota POST para gerar imagem
 router.post("/", async (req, res) => {
-  try {
-    const { mensagem, estilo, tema, corPredominante, corTexto, posicaoTexto } = req.body;
+    try {
+        // Desestruturação dos parâmetros esperados do frontend
+        const { mensagem, estilo, tema, corPredominante, corTexto, posicaoTexto } = req.body;
 
-    if (!mensagem) {
-      return res.status(400).json({ error: "Mensagem é obrigatória." });
+        // 1. Monta o prompt completo com base nas entradas
+        const prompt = buildPrompt({
+            mensagem,
+            estilo,
+            tema,
+            corPredominante,
+            corTexto,
+            posicaoTexto,
+        });
+
+        // 2. Gera a imagem via Stability AI
+        const imageBase64 = await generateImage(prompt);
+
+        // 3. Responde ao cliente com sucesso
+        res.status(200).json({
+            success: true,
+            prompt, // Devolve o prompt para debug ou referência
+            image: imageBase64,
+        });
+    } catch (error) {
+        // 4. Tratamento de Erro Otimizado
+        console.error("Erro ao processar solicitação de geração:", error.message);
+        
+        // Determina o status code de forma mais inteligente:
+        // Se o erro for um erro de cliente (Bad Request 400), usa 400.
+        const statusCode = error.message.includes("Falha na API da Stability (400)") || error.message.includes("O prompt de geração está vazio") 
+                           ? 400 : 500;
+                           
+        res.status(statusCode).json({ 
+            success: false, 
+            error: "Falha ao gerar imagem.",
+            details: error.message // Inclui a mensagem de erro para o frontend (opcional)
+        });
     }
-
-    // Monta prompt (mesmo do seu front-end)
-    let prompt = `${mensagem}`;
-    if (estilo) prompt += `, estilo ${estilo}`;
-    if (tema) prompt += `, tema ${tema}`;
-    if (corPredominante) prompt += `, cor predominante ${corPredominante}`;
-    prompt += ", figurinha para WhatsApp, design clean, sem bordas, fundo estético, arte digital";
-
-    // Gera imagem
-    const imageBase64 = await generateImage(prompt);
-
-    res.status(200).json({ success: true, image: imageBase64 });
-  } catch (error) {
-    console.error("Erro real:", error.message);
-    res.status(500).json({ error: error.message || "Falha ao gerar imagem." });
-  }
 });
 
 export default router;
