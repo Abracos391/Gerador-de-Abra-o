@@ -1,11 +1,9 @@
 // O 'fetch' nativo do Node.js é usado.
-// Não é necessário importar o 'axios' ou 'dotenv'.
 
-// A chave é lida diretamente do ambiente do Render
 const STABILITY_API_URL = "https://api.stability.ai/v2beta/stable-image/generate/core"; 
 
 /**
- * Gera uma imagem usando a API da Stability AI (Modelo SDXL-Core v2beta).
+ * Gera uma imagem usando a API da Stability AI (Modelo SDXL-Core v2beta) com payload mínimo.
  * @param {string} prompt O prompt de texto completo para a geração da imagem.
  * @returns {Promise<string>} A imagem gerada em formato base64.
  */
@@ -14,7 +12,7 @@ export async function generateImage(prompt) {
     // O nome da variável de ambiente no Render DEVE ser STABILITY_API_KEY
     const key = process.env.STABILITY_API_KEY; 
 
-    // Verificação de segurança (já testada e funcional)
+    // Verificação de segurança
     if (!key) {
         throw new Error("Erro de Configuração: STABILITY_API_KEY não configurada no Render.");
     }
@@ -29,15 +27,14 @@ export async function generateImage(prompt) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // CORREÇÃO: Adicionar o Accept para receber o JSON/Base64
                 "Accept": "application/json", 
                 "Authorization": `Bearer ${key}`
             },
             body: JSON.stringify({
+                // Requisição MÍNIMA: Apenas o prompt e o formato de saída.
+                // Removemos aspect_ratio e outros parâmetros para isolar o problema.
                 prompt: prompt,
-                // Proporção de tela vertical/wallpaper (1024x1536)
-                aspect_ratio: "2:3", 
-                output_format: "jpeg"
+                output_format: "jpeg" // Formato necessário para receber Base64
             })
         });
 
@@ -46,7 +43,7 @@ export async function generateImage(prompt) {
             const err = await res.json().catch(() => ({}));
             const errorMessage = err.errors?.[0]?.message || err.message || res.statusText;
             
-            // Loga o erro específico (400) que vimos no log
+            // Loga o erro específico (400)
             console.error(`Stability API Error ${res.status}:`, errorMessage);
             
             throw new Error(`Falha na API da Stability (${res.status}): ${errorMessage}`);
