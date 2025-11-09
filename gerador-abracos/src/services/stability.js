@@ -24,3 +24,4 @@ export async function generateImage(prompt) {
   const data = await res.json();
   return data.artifacts[0].base64;
 }
+
