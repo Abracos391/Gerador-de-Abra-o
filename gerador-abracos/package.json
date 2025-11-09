@@ -10,6 +10,7 @@
   },
   "keywords": [
     "stability-ai",
+    "openai",
     "wallpaper",
     "ia",
     "gerador-de-abracos",
@@ -24,8 +25,8 @@
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "morgan": "^1.10.0",
-    "dotenv": "^16.4.5",
-    "axios": "^1.7.4"
+    "axios": "^1.7.4",
+    "openai": "^4.47.1"  
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
