@@ -1,6 +1,7 @@
-// O 'fetch' nativo do Node.js é usado, não é necessário o 'axios' (se estiver usando Node.js 18+ no Render)
+// O 'fetch' nativo do Node.js é usado.
+// Não é necessário importar o 'axios' ou 'dotenv'.
 
-// A chave é lida DIRETAMENTE do ambiente do Render (STABILITY_API_KEY)
+// A chave é lida diretamente do ambiente do Render
 const STABILITY_API_URL = "https://api.stability.ai/v2beta/stable-image/generate/core"; 
 
 /**
@@ -13,9 +14,14 @@ export async function generateImage(prompt) {
     // O nome da variável de ambiente no Render DEVE ser STABILITY_API_KEY
     const key = process.env.STABILITY_API_KEY; 
 
-    // Verificação de segurança
+    // Verificação de segurança (já testada e funcional)
     if (!key) {
         throw new Error("Erro de Configuração: STABILITY_API_KEY não configurada no Render.");
+    }
+    
+    // Verificação crítica para o Erro 400
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 5) {
+         throw new Error("O prompt de geração está vazio ou muito curto. Falha no promptBuilder.");
     }
 
     try {
@@ -23,17 +29,15 @@ export async function generateImage(prompt) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // CORREÇÃO CRÍTICA: Adicionar o Accept para receber o JSON/Base64
+                // CORREÇÃO: Adicionar o Accept para receber o JSON/Base64
                 "Accept": "application/json", 
                 "Authorization": `Bearer ${key}`
             },
             body: JSON.stringify({
                 prompt: prompt,
-                // Proporção de tela vertical/wallpaper. O 'core' aceita 'aspect_ratio'.
+                // Proporção de tela vertical/wallpaper (1024x1536)
                 aspect_ratio: "2:3", 
-                output_format: "jpeg",
-                // Estilo (opcional, adicione aqui se quiser um estilo padrão)
-                // mode: "text-to-image" // Geralmente é o padrão
+                output_format: "jpeg"
             })
         });
 
@@ -42,9 +46,9 @@ export async function generateImage(prompt) {
             const err = await res.json().catch(() => ({}));
             const errorMessage = err.errors?.[0]?.message || err.message || res.statusText;
             
+            // Loga o erro específico (400) que vimos no log
             console.error(`Stability API Error ${res.status}:`, errorMessage);
             
-            // Lança o erro com o status para o seu frontend/log
             throw new Error(`Falha na API da Stability (${res.status}): ${errorMessage}`);
         }
 
