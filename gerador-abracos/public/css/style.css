@@ -1,78 +1,133 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f0f4f8;
+/* Reset básico */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Corpo da página com fundo suave */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #fddde6, #f6f4ff);
+  color: #333;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-}
-
-.container {
-  width: 100%;
-  max-width: 500px;
-  background-color: #ffffff;
+  align-items: center;
   padding: 20px;
-  margin: 40px 0;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-h1, h2 {
+/* Fundo de partículas (vai usar uma pseudo-elemento) */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2), transparent 20%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.2), transparent 20%);
+  background-repeat: repeat;
+  animation: moveParticles 60s linear infinite;
+  z-index: -1;
+}
+
+/* Animação suave para partículas */
+@keyframes moveParticles {
+  from {background-position: 0 0, 0 0;}
+  to {background-position: 100px 100px, -100px -100px;}
+}
+
+/* Container principal */
+.container {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
   text-align: center;
-  color: #333;
+  backdrop-filter: blur(10px);
 }
 
+/* Título */
+h1 {
+  font-family: 'Pacifico', cursive;
+  color: #6f4e37;
+  margin-bottom: 20px;
+  font-size: 2em;
+}
+
+/* Formulário */
 form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  margin-top: 20px;
 }
 
+/* Labels */
 label {
   font-weight: bold;
-  margin-top: 10px;
+  color: #555;
+  font-size: 0.95em;
+  text-align: left;
 }
 
-input, select, button {
-  padding: 8px;
-  border-radius: 5px;
+/* Inputs */
+input[type="text"], select {
+  padding: 10px;
   border: 1px solid #ccc;
-  font-size: 14px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1em;
+  transition: border-color 0.3s;
 }
 
+input[type="text"]:focus, select:focus {
+  border-color: #a0c4ff;
+  outline: none;
+}
+
+/* Botão */
 button {
-  background-color: #4CAF50;
+  background-color: #a0c4ff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
   color: white;
+  font-size: 1em;
   cursor: pointer;
   margin-top: 10px;
+  transition: background 0.3s;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: #559dff;
 }
 
+/* Resultado */
 #resultado {
-  margin-top: 20px;
-  text-align: center;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 #imagemGerada {
   max-width: 100%;
-  border-radius: 8px;
-  display: block;
-  margin: 10px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 #downloadLink {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 8px 12px;
-  background-color: #2196F3;
+  padding: 10px 20px;
+  background-color: #6f4e37;
   color: white;
   text-decoration: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  transition: background 0.3s;
 }
 
 #downloadLink:hover {
-  background-color: #1976D2;
+  background-color: #523637;
 }
