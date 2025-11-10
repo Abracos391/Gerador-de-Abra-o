@@ -1,29 +1,229 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Abraços</title>
-  <link rel="stylesheet" href="css/style.css">>
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Corpo com imagem de fundo responsiva */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80'); /* Substitua com sua imagem */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* Partículas sutis de fundo usando pseudo-elemento */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2), transparent 20%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.2), transparent 20%);
+      background-repeat: repeat;
+      animation: moveParticles 60s linear infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes moveParticles {
+      from {background-position: 0 0, 0 0;}
+      to {background-position: 100px 100px, -100px -100px;}
+    }
+
+    /* Container principal */
+    .container {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 30px;
+      margin-top: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      max-width: 650px;
+      width: 100%;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Título */
+    h1 {
+      font-family: 'Pacifico', cursive, serif;
+      color: #6f4e37;
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-align: center;
+    }
+
+    /* Formulário - estilo simples */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      color: #555;
+      font-size: 0.95em;
+    }
+
+    input[type="text"], select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: #a0c4ff;
+      outline: none;
+    }
+
+    /* Botão */
+    button {
+      background-color: #a0c4ff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      color: white;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #559dff;
+    }
+
+    /* Resultado, imagem e download */
+    #resultado {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #imagemGerada {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    #downloadLink {
+      padding: 10px 20px;
+      background-color: #6f4e37;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    #downloadLink:hover {
+      background-color: #523637;
+    }
+
+    /* Banner fixo */
+    .banner.fixo {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: rgba(255,255,255,0.7);
+      padding: 20px;
+      border-radius: 15px;
+      font-size: 2em;
+      color: #6f4e37;
+      text-align: center;
+      font-family: 'Pacifico', cursive;
+    }
+
+    /* Carrossel */
+    .carousel-wrapper {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      margin: 50px 0;
+    }
+
+    .carousel {
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+
+    .carousel .banner {
+      min-width: 100%;
+      flex-shrink: 0;
+    }
+
+    /* Controles carrossel */
+    .prev, .next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.3);
+      border: none;
+      color: #fff;
+      font-size: 2em;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      z-index: 30;
+    }
+
+    .prev { left: 10px; }
+    .next { right: 10px; }
+  </style>
 </head>
 <body>
+  <!-- Banner fixo -->
+  <div class="banner fixo">
+    Anuncie Aqui
+  </div>
+
+  <!-- Carrossel -->
+  <div class="carousel-wrapper">
+    <div class="carousel">
+      <div class="banner"><div class="mensagem-overlay">Anuncie Aqui</div></div>
+      <div class="banner"><div class="mensagem-overlay">Anuncie Aqui</div></div>
+      <div class="banner"><div class="mensagem-overlay">Anuncie Aqui</div></div>
+    </div>
+    <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+    <button class="next" onclick="changeSlide(1)">&#10095;</button>
+  </div>
+
   <div class="container">
     <h1>Gerador de Abraços</h1>
     <form id="geradorForm">
       <label>Mensagem:</label>
-      <input type="text" name="mensagem" required>
+      <input type="text" name="mensagem" required />
 
       <label>Estilo:</label>
-      <input type="text" name="estilo" placeholder="ex: digital art, cartoon" required>
+      <input type="text" name="estilo" placeholder="ex: digital art, cartoon" required />
 
       <label>Tema/Fundo:</label>
-      <input type="text" name="tema" placeholder="ex: natalino, floral" required>
+      <input type="text" name="tema" placeholder="ex: natalino, floral" required />
 
       <label>Cor predominante:</label>
-      <input type="text" name="corPredominante" placeholder="ex: azul, vermelho" required>
+      <input type="text" name="corPredominante" placeholder="ex: azul, vermelho" required />
 
       <label>Cor do texto:</label>
-      <input type="text" name="corTexto" placeholder="ex: branco, preto" required>
+      <input type="text" name="corTexto" placeholder="ex: branco, preto" required />
 
       <label>Posição do texto:</label>
       <select name="posicaoTexto" required>
@@ -35,14 +235,40 @@
       <button type="submit">Gerar Imagem</button>
     </form>
 
-    <div id="resultado">
+    <div id="resultado" style="display:none;">
       <h2>Imagem Gerada:</h2>
       <img id="imagemGerada" src="" alt="" />
       <a id="downloadLink" href="" download="abraço.png">Baixar Imagem</a>
     </div>
   </div>
 
-  <script src="js/main.js"></script>
+  <script>
+    // Script do carrossel
+    let currentIndex = 0;
+    function changeSlide(direction) {
+      const carousel = document.querySelector('.carousel');
+      const totalSlides = document.querySelectorAll('.carousel .banner').length;
+      currentIndex += direction;
+      if (currentIndex < 0) currentIndex = totalSlides - 1;
+      if (currentIndex >= totalSlides) currentIndex = 0;
+      carousel.style.transform = 'translateX(' + (-currentIndex * 100) + '%)';
+    }
+
+    // Script do formulário
+    document.getElementById('geradorForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Aqui você substitui pelo seu código de API ou geração
+      const imgUrl = 'https://via.placeholder.com/600x300.png?text=Imagem+cri+ada';
+      const img = document.getElementById('imagemGerada');
+      img.src = imgUrl;
+      img.alt = 'Imagem gerada';
+
+      document.getElementById('resultado').style.display = 'block';
+
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = imgUrl;
+    });
+  </script>
 </body>
 </html>
-
